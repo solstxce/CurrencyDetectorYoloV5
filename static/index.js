@@ -1,87 +1,107 @@
 let englishtext = "";
 let hinditext = "";
 
-// No need of progress bar for time delay in app version-2 but kept it due to nice animation.
+// Initialize webcam
+async function initWebcam() {
+    const webcam = document.getElementById('webcam');
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    webcam.srcObject = stream;
+    webcam.classList.remove('hidden');
+    $('#upload-zone').addClass('hidden'); // Hide upload zone when using webcam
+    $('#capture-button').removeClass('hidden'); // Show capture button
+    $('#sendbutton').addClass('hidden'); // Hide submit button
+}
 
-window.onload = () => {
-	$('#sendbutton').click(() => {
-		englishtext = "";
-		hinditext = "";
-		hideInterface();
+// Capture photo from webcam
+function capturePhoto() {
+    const webcam = document.getElementById('webcam');
+    const imagebox = $('#imagebox');
+    const canvas = document.createElement('canvas');
+    canvas.width = webcam.videoWidth;
+    canvas.height = webcam.videoHeight;
+    const context = canvas.getContext('2d');
+    context.drawImage(webcam, 0, 0);
+    const imageData = canvas.toDataURL('image/jpeg');
+    imagebox.attr('src', imageData).removeClass('hidden');
+    $('#retake-button').removeClass('hidden'); // Show retake button
+    $('#capture-button').addClass('hidden'); // Hide capture button
+    $('#sendbutton').removeClass('hidden'); // Show submit button
+}
 
-		imagebox = $('#imagebox')
-		input = $('#imageinput')[0]
-		if(input.files && input.files[0])
-		{
-			let formData = new FormData();
-			formData.append('image' , input.files[0]);
-			$.ajax({
-				url: "http://192.168.8.112:8080/detectObject", 
-				// fix below to your liking
-				// url: "http://xxx.xxx.xxx.xxx:8080/detectObject", 
-				type:"POST",
-				data: formData,
-				cache: false,
-				processData:false,
-				contentType:false,
-				error: function(data){
-					console.log("upload error" , data);
-					console.log(data.getAllResponseHeaders());
+// Retake photo
+function retakePhoto() {
+    $('#imagebox').addClass('hidden'); // Hide the image box
+    $('#retake-button').addClass('hidden'); // Hide retake button
+    $('#capture-button').removeClass('hidden'); // Show capture button again
+}
 
-					updateInterface();
-				},
-				success: function(data){
-					console.log(data);
-					bytestring = data['status'];
-					image = bytestring.split('\'')[1];
-					englishtext = data['englishmessage'];
-					hinditext = data['hindimessage'];
-					imagebox.attr('src' , 'data:image/jpeg;base64,'+image);
-					
-					// $('#audio').html('<audio autoplay><source src="static/detected_image.mp3"></audio>');
-					updateInterface();					
-				}
-			});
-			
-		}
-	});
+// Toggle upload zone visibility
+function toggleUploadZone() {
+    $('#upload-zone').toggleClass('hidden');
+    $('#webcam').addClass('hidden'); // Hide webcam when using upload
+    $('#capture-button').addClass('hidden'); // Hide capture button
+    $('#sendbutton').removeClass('hidden'); // Show submit button
+}
 
-	// below speechSynthesis WebAPI
-	const voiceEnglishOutputButton = document.getElementById('voice-english-output');
-	const voiceHindiOutputButton = document.getElementById('voice-hindi-output');
-	voiceEnglishOutputButton.addEventListener('click', () => {
-		let utterance = new SpeechSynthesisUtterance(englishtext);
-		// utterance.lang = "en-US";
-		utterance.lang = "en-GB";
-		// utterance.voice = speechSynthesis.getVoices()[2]; // MS Zira
-		// utterance.voice = speechSynthesis.getVoices()[4]; // Google English
-		utterance.voice = speechSynthesis.getVoices()[5];// Google English Female
-		speechSynthesis.speak(utterance);
-	});
-	voiceHindiOutputButton.addEventListener('click', () => {
-		let utterance = new SpeechSynthesisUtterance(hinditext);
-		utterance.lang = "hi-IN";
-		utterance.voice = speechSynthesis.getVoices()[10];// Google Hindi Female
-		speechSynthesis.speak(utterance);
-	});
-};
+// Process the image
+function processImage() {
+    englishtext = "";
+    hinditext = "";
+    hideInterface();
 
+    const imagebox = $('#imagebox');
+    const input = $('#imageinput')[0];
+    let formData = new FormData();
 
+    if (input.files && input.files[0]) {
+        formData.append('image', input.files[0]);
+    } else {
+        const imageData = imagebox.attr('src').split(',')[1]; // Get base64 data
+        const byteString = atob(imageData);
+        const ab = new Uint8Array(byteString.length);
+        for (let i = 0; i < byteString.length; i++) {
+            ab[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: 'image/jpeg' });
+        formData.append('image', blob);
+    }
 
-function readUrl(input){
-	imagebox = $('#imagebox');
-	console.log("evoked readUrl");
-	if(input.files && input.files[0]){
-		let reader = new FileReader();
-		reader.onload = function(e){
-			// console.log(e)
-			
-			imagebox.attr('src',e.target.result); 
-			//change image dimensions
-			resizeImage();
-		}
-		reader.readAsDataURL(input.files[0]);
-	}
+    $.ajax({
+        url: "http://localhost:8080/detectObject",
+        type: "POST",
+        data: formData,
+        cache: false,
+        processData: false,
+        contentType: false,
+        error: function(data) {
+            console.log("upload error", data);
+            updateInterface();
+        },
+        success: function(data) {
+            console.log(data);
+            const bytestring = data['status'];
+            const image = bytestring.split('\'')[1];
+            englishtext = data['englishmessage'];
+            hinditext = data['hindimessage'];
+            imagebox.attr('src', 'data:image/jpeg;base64,' + image);
+            updateInterface();
+        }
+    });
+}
+
+// Handle file upload
+function readUrl(input) {
+    const imagebox = $('#imagebox');
+    if (input.files && input.files[0]) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            imagebox.attr('src', e.target.result).removeClass('hidden');
+            $('#sendbutton').removeClass('hidden'); // Show submit button
+            $('#retake-button').addClass('hidden'); // Hide retake button
+            $('#capture-button').addClass('hidden'); // Hide capture button
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
 }
 
 function myResizeFunction2(y){

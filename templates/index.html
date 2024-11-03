@@ -7,59 +7,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>YOLO-Currency Notes Detection</title>
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <!-- My CSS -->
   <link rel="stylesheet" type="text/css" href="../static/index.css">
-  <!-- <link rel="stylesheet" type="text/css" href="http://xxx.xxx.xxx.xxx:8080/static/index.css"> -->
   <!-- jQuery -->
-  
-  <!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous">
-  </script> -->
-  
-  <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous">
-  </script> -->
-
-  <!-- Google CDN -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
-  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <!-- My JS -->
   <script type="text/javascript" src="../static/index.js"></script>
-  <!-- <script type="text/javascript" src="http://xxx.xxx.xxx.xxx:8080/static/index.js"></script> -->
 </head>
 
-<body>
-  <div class="app">
-    <div class="app-header">
-      <p class="title-wrap">
-          Indian Currency Notes Detection - YOLO
-      </p>
-      <div class="pre-img">
-        <span>
-          <img id="imagebox" src="" />
-        </span>
-      </div>
-      <form>
-        <input id="imageinput" type="file" name="image" onchange="readUrl(this)">
-      </form>
-      <button name="send" id="sendbutton" onclick="changeColor()">Send</button>
-
-      <div class="loading">
-        <div class="percent">100%</div>
-        <div class="text">Completed!</div>
-        <div class="progress-bar">
-          <div class="progress">
-          </div>
-        </div>
-      </div>
-
-      <!-- <a href="http://xxx.xxx.xxx.xxx:8080/audioFile"><button id="voiceoutput" class="voiceoutputbtn">Get Speech Out</button></a> -->
-      <!-- <a href="/audioFile"><button id="voiceoutput" class="voiceoutputbtn">Get Speech Out</button></a> -->
-      <button id="voice-english-output" class="voiceoutputbtn-1">Get English Speech Out</button>
-      <button id="voice-hindi-output" class="voiceoutputbtn-2">Get Hindi Speech Out</button>
+<body class="bg-gray-900 text-white">
+  <div class="app flex flex-col items-center justify-center min-h-screen">
+    <div class="app-header text-center mb-6">
+      <p class="title-wrap text-4xl font-bold">Indian Currency Notes Detection - YOLO</p>
     </div>
+
+    <div class="card bg-gray-800 p-6 rounded-lg shadow-lg mb-6">
+      <p class="text-lg mb-4">Choose an option to proceed:</p>
+      <div class="flex space-x-4 mb-4">
+        <button id="webcam-button" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-500" onclick="initWebcam()">Use Webcam</button>
+        <button id="upload-button" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-500" onclick="toggleUploadZone()">Upload File</button>
+      </div>
+    </div>
+
+    <div id="upload-zone" class="border-dashed border-2 border-gray-500 p-4 rounded-lg hidden mb-4 cursor-pointer" onclick="document.getElementById('imageinput').click();">
+      <p class="text-center">Drag and drop your image here or click to upload</p>
+      <input id="imageinput" type="file" name="image" class="hidden" onchange="readUrl(this)">
+    </div>
+
+    <div class="pre-img mb-4">
+      <span>
+        <img id="imagebox" class="rounded-lg hidden" src="" />
+      </span>
+    </div>
+
+    <div class="flex space-x-4 mb-4">
+      <button id="capture-button" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-400 hidden" onclick="capturePhoto()">Capture Photo</button>
+      <button id="retake-button" class="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-400 hidden" onclick="retakePhoto()">Retake Photo</button>
+      <button name="send" id="sendbutton" class="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-500 hidden" onclick="processImage()">Submit</button>
+    </div>
+
+    <div class="loading hidden">
+      <div class="percent">100%</div>
+      <div class="text">Completed!</div>
+      <div class="progress-bar">
+        <div class="progress"></div>
+      </div>
+    </div>
+
+    <div class="flex space-x-4 mb-4">
+      <button id="voice-english-output" class="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-400 hidden">Get English Speech Out</button>
+      <button id="voice-hindi-output" class="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-400 hidden">Get Hindi Speech Out</button>
+    </div>
+
+    <video id="webcam" class="hidden" autoplay></video>
   </div>
 
+  <script type="text/javascript" src="../static/index.js"></script>
 </body>
 
 </html>
